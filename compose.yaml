@@ -1,0 +1,11 @@
+services:
+  app:
+    build: .
+    env_file: ./.env
+    ports:
+      - 8080:${SERVER_PORT}
+    networks:
+      - local
+
+networks:
+  local:
