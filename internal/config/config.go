@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"kafka-pet/internal/infra/logger"
-	"time"
 
 	"github.com/caarlos0/env/v11"
 	"go.uber.org/zap"
@@ -12,12 +11,7 @@ import (
 
 type Config struct {
 	Server Server `envPrefix:"SERVER_"`
-}
-
-type Server struct {
-	Host            string        `env:"HOST"`
-	Port            uint16        `env:"PORT,notEmpty"`
-	ShutdownTimeout time.Duration `env:"SHUTDOWN_TIMEOUT,notEmpty"`
+	Kafka  Kafka  `envPrefix:"KAFKA_"`
 }
 
 func Load(ctx context.Context) (*Config, error) {

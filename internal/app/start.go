@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"kafka-pet/internal/config"
 	"kafka-pet/internal/controller"
+	"kafka-pet/internal/infra/kafka/producer"
 	"kafka-pet/internal/infra/logger"
 	"kafka-pet/internal/router"
 	"kafka-pet/internal/server"
@@ -30,7 +31,14 @@ func Start(ctx context.Context) error {
 		return fmt.Errorf("couldn't load config: %w", err)
 	}
 
-	controller := controller.NewController()
+	producer, err := producer.NewAsyncProducer(ctx, &config.Kafka)
+	if err != nil {
+		l.Error("Couldn't create new kafka producer", zap.Error(err))
+		return fmt.Errorf("couldn't create new kafka producer: %w", err)
+	}
+	defer producer.AsyncClose()
+
+	controller := controller.NewController(producer, &config.Kafka)
 	router := router.NewRouter(controller)
 	server := server.NewServer(&config.Server, router)
 

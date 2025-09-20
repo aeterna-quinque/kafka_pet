@@ -6,7 +6,7 @@ build:
 
 .PHONY: up
 up:
-	docker-compose -f $(COMPOSE_FILE) up
+	docker-compose -f $(COMPOSE_FILE) up -d
 
 .PHONY: start
 start:
