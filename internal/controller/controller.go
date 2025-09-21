@@ -1,19 +1,23 @@
 package controller
 
 import (
-	"kafka-pet/internal/config"
+	"context"
+	"kafka-pet/internal/infra/logger"
+	"kafka-pet/internal/service"
 
-	"github.com/IBM/sarama"
+	"go.uber.org/zap"
 )
 
 type Controller struct {
-	producer sarama.AsyncProducer
-	kafkaCfg *config.Kafka
+	service service.Servicer
+	ctx     context.Context
+	logger  *zap.Logger
 }
 
-func NewController(producer sarama.AsyncProducer, cfg *config.Kafka) *Controller {
+func NewController(ctx context.Context, service service.Servicer) *Controller {
 	return &Controller{
-		producer: producer,
-		kafkaCfg: cfg,
+		service: service,
+		ctx:     ctx,
+		logger:  logger.FromContext(ctx),
 	}
 }

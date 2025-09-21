@@ -9,6 +9,7 @@ import (
 	"kafka-pet/internal/infra/logger"
 	"kafka-pet/internal/router"
 	"kafka-pet/internal/server"
+	"kafka-pet/internal/service"
 	"os"
 	"os/signal"
 	"syscall"
@@ -31,14 +32,26 @@ func Start(ctx context.Context) error {
 		return fmt.Errorf("couldn't load config: %w", err)
 	}
 
-	producer, err := producer.NewAsyncProducer(ctx, &config.Kafka)
+	asyncProducer, err := producer.NewAsyncProducer(ctx, &config.Kafka)
 	if err != nil {
-		l.Error("Couldn't create new kafka producer", zap.Error(err))
-		return fmt.Errorf("couldn't create new kafka producer: %w", err)
+		l.Error("Couldn't create new kafka async producer", zap.Error(err))
+		return fmt.Errorf("couldn't create new kafka async producer: %w", err)
 	}
-	defer producer.AsyncClose()
+	defer asyncProducer.AsyncClose()
 
-	controller := controller.NewController(producer, &config.Kafka)
+	syncProducer, err := producer.NewSyncProducer(ctx, &config.Kafka)
+	if err != nil {
+		l.Error("Couldn't create new kafka sync producer", zap.Error(err))
+		return fmt.Errorf("couldn't create new kafka sync producer: %w", err)
+	}
+	defer func() {
+		if err = syncProducer.Close(); err != nil {
+			l.Error("Couldn't close kafka sync producer", zap.Error(err))
+		}
+	}()
+
+	service := service.NewService(syncProducer, asyncProducer, config)
+	controller := controller.NewController(ctx, service)
 	router := router.NewRouter(controller)
 	server := server.NewServer(&config.Server, router)
 
