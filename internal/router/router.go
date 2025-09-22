@@ -12,6 +12,7 @@ func NewRouter(controller *controller.Controller) *fiber.App {
 	r.All("/", controller.Greet)
 	r.Post("/create", controller.CreateUser)
 	r.Get("/get", controller.GetUser)
+	r.Get("/messages", controller.GetMessages)
 
 	return r
 }

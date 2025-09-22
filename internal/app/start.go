@@ -5,8 +5,10 @@ import (
 	"fmt"
 	"kafka-pet/internal/config"
 	"kafka-pet/internal/controller"
+	"kafka-pet/internal/infra/kafka/consumer"
 	"kafka-pet/internal/infra/kafka/producer"
 	"kafka-pet/internal/infra/logger"
+	"kafka-pet/internal/messages"
 	"kafka-pet/internal/router"
 	"kafka-pet/internal/server"
 	"kafka-pet/internal/service"
@@ -50,7 +52,21 @@ func Start(ctx context.Context) error {
 		}
 	}()
 
-	service := service.NewService(syncProducer, asyncProducer, config)
+	consumerGroup, err := consumer.NewConsumerGroup(ctx, &config.Kafka)
+	if err != nil {
+		l.Error("Couldn't create new kafka consumer group", zap.Error(err))
+		return fmt.Errorf("couldn't create new kafka consumer group: %w", err)
+	}
+	defer func() {
+		if err = consumerGroup.Close(); err != nil {
+			l.Error("Couldn't close kafka consumer group", zap.Error(err))
+		}
+	}()
+
+	statsConsumer := messages.NewMessagesConsumerHandler(&config.MessagesConsumer, l)
+	go consumerGroup.Consume(ctx, statsConsumer.GetTopics(), statsConsumer)
+
+	service := service.NewService(syncProducer, asyncProducer, config, statsConsumer)
 	controller := controller.NewController(ctx, service)
 	router := router.NewRouter(controller)
 	server := server.NewServer(&config.Server, router)

@@ -12,8 +12,6 @@ import (
 	"go.uber.org/zap"
 )
 
-const getSubTopic = "get"
-
 func (s *Service) GetUser(ctx context.Context, id uint32) (*domain.User, error) {
 	l := logger.FromContext(ctx)
 
@@ -29,7 +27,7 @@ func (s *Service) GetUser(ctx context.Context, id uint32) (*domain.User, error) 
 	}
 
 	s.asyncProducer.SendMessage(
-		fmt.Sprintf("%s.%s", s.cfg.Kafka.UsersTopic, getSubTopic),
+		s.cfg.Kafka.UsersGetTopic,
 		strconv.Itoa(int(id)),
 		eventJson,
 	)

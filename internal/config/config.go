@@ -10,8 +10,9 @@ import (
 )
 
 type Config struct {
-	Server Server `envPrefix:"SERVER_"`
-	Kafka  Kafka  `envPrefix:"KAFKA_"`
+	Server           Server           `envPrefix:"SERVER_"`
+	Kafka            Kafka            `envPrefix:"KAFKA_"`
+	MessagesConsumer MessagesConsumer `envPrefix:"MESSAGES_CONSUMER_"`
 }
 
 func Load(ctx context.Context) (*Config, error) {

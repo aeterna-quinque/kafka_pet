@@ -8,8 +8,10 @@ type GetUserResponse struct {
 	Age  uint8  `json:"age"`
 }
 
-func (r *GetUserResponse) FromUser(u *domain.User) {
-	r.Id = u.Id
-	r.Name = u.Name
-	r.Age = u.Age
+func GetUserResponseFromUser(u *domain.User) *GetUserResponse {
+	return &GetUserResponse{
+		Id:   u.Id,
+		Name: u.Name,
+		Age:  u.Age,
+	}
 }

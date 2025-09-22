@@ -9,4 +9,5 @@ import (
 type Servicer interface {
 	CreateUser(ctx context.Context, req *dto.CreateUserRequest) error
 	GetUser(ctx context.Context, id uint32) (*domain.User, error)
+	GetMessages() (*domain.Messages, error)
 }

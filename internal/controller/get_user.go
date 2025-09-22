@@ -33,8 +33,7 @@ func (c *Controller) GetUser(ctx *fiber.Ctx) error {
 		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"code": fiber.ErrInternalServerError, "message": "Couldn't get user"})
 	}
 
-	var resp dto.GetUserResponse
-	resp.FromUser(user)
+	resp := dto.GetUserResponseFromUser(user)
 
 	return ctx.Status(fiber.StatusOK).JSON(resp)
 }
