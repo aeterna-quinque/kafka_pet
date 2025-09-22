@@ -13,6 +13,7 @@ type Config struct {
 	Server           Server           `envPrefix:"SERVER_"`
 	Kafka            Kafka            `envPrefix:"KAFKA_"`
 	MessagesConsumer MessagesConsumer `envPrefix:"MESSAGES_CONSUMER_"`
+	Postgres         Postgres         `envPrefix:"POSTGRES_"`
 }
 
 func Load(ctx context.Context) (*Config, error) {

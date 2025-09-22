@@ -8,7 +8,9 @@ import (
 	"kafka-pet/internal/infra/kafka/consumer"
 	"kafka-pet/internal/infra/kafka/producer"
 	"kafka-pet/internal/infra/logger"
+	"kafka-pet/internal/infra/postgres"
 	"kafka-pet/internal/messages"
+	repo "kafka-pet/internal/repo/postgres"
 	"kafka-pet/internal/router"
 	"kafka-pet/internal/server"
 	"kafka-pet/internal/service"
@@ -66,7 +68,14 @@ func Start(ctx context.Context) error {
 	statsConsumer := messages.NewMessagesConsumerHandler(&config.MessagesConsumer, l)
 	go consumerGroup.Consume(ctx, statsConsumer.GetTopics(), statsConsumer)
 
-	service := service.NewService(syncProducer, asyncProducer, config, statsConsumer)
+	pool, err := postgres.NewPostgres(ctx, &config.Postgres)
+	if err != nil {
+		l.Error("Couldn't connect to db", zap.Error(err))
+		return fmt.Errorf("couldn't connect to db: %w", err)
+	}
+
+	repo := repo.NewRepository(pool)
+	service := service.NewService(syncProducer, asyncProducer, config, statsConsumer, repo)
 	controller := controller.NewController(ctx, service)
 	router := router.NewRouter(controller)
 	server := server.NewServer(&config.Server, router)
