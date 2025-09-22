@@ -9,7 +9,6 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/IBM/sarama"
 	"go.uber.org/zap"
 )
 
@@ -29,18 +28,10 @@ func (s *Service) GetUser(ctx context.Context, id uint32) (*domain.User, error) 
 		return nil, fmt.Errorf("couldn't marshal get user event: %w", err)
 	}
 
-	topic := fmt.Sprintf("%s.%s", s.cfg.Kafka.UsersTopic, getSubTopic)
-	key := strconv.Itoa(int(id))
-
-	s.asyncProducer.Input() <- &sarama.ProducerMessage{
-		Topic: topic,
-		Key:   sarama.StringEncoder(key),
-		Value: sarama.ByteEncoder(eventJson),
-	}
-	l.Info(
-		"Message has been put in queue for sending to kafka",
-		zap.String("topic", topic),
-		zap.String("key", key),
+	s.asyncProducer.SendMessage(
+		fmt.Sprintf("%s.%s", s.cfg.Kafka.UsersTopic, getSubTopic),
+		strconv.Itoa(int(id)),
+		eventJson,
 	)
 
 	return &domain.User{}, nil

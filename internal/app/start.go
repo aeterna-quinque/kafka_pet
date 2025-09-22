@@ -37,9 +37,9 @@ func Start(ctx context.Context) error {
 		l.Error("Couldn't create new kafka async producer", zap.Error(err))
 		return fmt.Errorf("couldn't create new kafka async producer: %w", err)
 	}
-	defer asyncProducer.AsyncClose()
+	defer asyncProducer.Close()
 
-	syncProducer, err := producer.NewSyncProducer(ctx, &config.Kafka)
+	syncProducer, err := producer.NewSyncProducer(l, &config.Kafka)
 	if err != nil {
 		l.Error("Couldn't create new kafka sync producer", zap.Error(err))
 		return fmt.Errorf("couldn't create new kafka sync producer: %w", err)

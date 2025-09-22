@@ -10,7 +10,6 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/IBM/sarama"
 	"go.uber.org/zap"
 )
 
@@ -34,27 +33,15 @@ func (s *Service) CreateUser(ctx context.Context, req *dto.CreateUserRequest) er
 		return fmt.Errorf("couldn't marshal create user event: %w", err)
 	}
 
-	topic := fmt.Sprintf("%s.%s", s.cfg.Kafka.UsersTopic, createSubTopic)
-	key := strconv.Itoa(int(user.Id))
-
-	partition, offset, err := s.syncProducer.SendMessage(&sarama.ProducerMessage{
-		Topic: topic,
-		Key:   sarama.StringEncoder(key),
-		Value: sarama.ByteEncoder(eventJson),
-	})
-	if err != nil {
-		l.Error("Couldn't send message to kafka", zap.String("topic", "users"), zap.Error(err))
+	if err = s.syncProducer.SendMessage(
+		fmt.Sprintf("%s.%s", s.cfg.Kafka.UsersTopic, createSubTopic),
+		strconv.Itoa(int(user.Id)),
+		eventJson,
+	); err != nil {
+		l.Error("Couldn't send message to kafka", zap.Error(err))
 		return fmt.Errorf("couldn't send message to kafka: %w", err)
 	}
-	l.Info(
-		"Message has been sent to kafka successfully",
-		zap.String("topic", topic),
-		zap.String("key", key),
-		zap.Int32("partition", partition),
-		zap.Int64("offset", offset),
-	)
 
 	l.Info("User created successfully", zap.Uint32("user_id", user.Id))
-
 	return nil
 }
