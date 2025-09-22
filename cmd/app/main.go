@@ -10,6 +10,6 @@ func main() {
 	ctx := context.Background()
 
 	if err := app.Start(ctx); err != nil {
-		log.Fatalf("couldn't start app: %v", err)
+		log.Fatalf("app error occurred: %v", err)
 	}
 }
