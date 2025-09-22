@@ -13,8 +13,6 @@ import (
 	"go.uber.org/zap"
 )
 
-const createSubTopic = "create"
-
 func (s *Service) CreateUser(ctx context.Context, req *dto.CreateUserRequest) error {
 	l := logger.FromContext(ctx)
 
@@ -34,7 +32,7 @@ func (s *Service) CreateUser(ctx context.Context, req *dto.CreateUserRequest) er
 	}
 
 	if err = s.syncProducer.SendMessage(
-		fmt.Sprintf("%s.%s", s.cfg.Kafka.UsersTopic, createSubTopic),
+		s.cfg.Kafka.UsersCreateTopic,
 		strconv.Itoa(int(user.Id)),
 		eventJson,
 	); err != nil {

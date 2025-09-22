@@ -34,7 +34,7 @@ func NewAsyncProducer(ctx context.Context, cfg *config.Kafka) (*AsyncProducer, e
 		logger:   l,
 	}
 
-	go p.parseChannels(ctx)
+	go p.trackChannels(ctx)
 
 	return p, nil
 }
@@ -57,11 +57,11 @@ func (p *AsyncProducer) Close() {
 	p.producer.AsyncClose()
 }
 
-func (p *AsyncProducer) parseChannels(ctx context.Context) {
+func (p *AsyncProducer) trackChannels(ctx context.Context) {
 	for {
 		select {
 		case <-ctx.Done():
-			p.logger.Info("Async producer stopped parsing channels due to context done")
+			p.logger.Info("Async producer stopped tracking channels due to context done")
 			return
 		case err := <-p.producer.Errors():
 			p.logger.Error("Async producer couldn't send message", zap.Error(err))
