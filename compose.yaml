@@ -71,6 +71,22 @@ services:
       KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
       KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka1:9093, 2@kafka2:9093, 3@kafka3:9093
+  kafka-init:
+    container_name: kafka-init
+    image: apache/kafka:4.1.0
+    entrypoint: ["/bin/bash", "-c", "/create_topics.sh"]
+    volumes:
+      - type: bind
+        source: ./create_topics.sh
+        target: /create_topics.sh
+    depends_on:
+      kafka1:
+        condition: service_healthy
+      kafka2:
+        condition: service_healthy
+      kafka3:
+        condition: service_healthy
+    init: true
   kafka-ui:
     container_name: kafka-ui
     image: provectuslabs/kafka-ui:v0.7.2
