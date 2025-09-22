@@ -1,7 +1,9 @@
 package controller
 
 import (
+	"errors"
 	"kafka-pet/internal/dto"
+	"kafka-pet/internal/service"
 	"math"
 	"strconv"
 
@@ -29,6 +31,10 @@ func (c *Controller) GetUser(ctx *fiber.Ctx) error {
 
 	user, err := c.service.GetUser(c.ctx, uint32(id))
 	if err != nil {
+		if errors.Is(err, service.ErrUserNotFound) {
+			c.logger.Info("User not found", zap.ByteString("uri", ctx.Request().RequestURI()), zap.Int("id", id), zap.Error(err))
+			return ctx.Status(fiber.StatusNotFound).JSON(fiber.Map{"code": fiber.StatusNotFound, "message": "User not found"})
+		}
 		c.logger.Error("Couldn't get user", zap.ByteString("uri", ctx.Request().RequestURI()), zap.Int("id", id), zap.Error(err))
 		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"code": fiber.ErrInternalServerError, "message": "Couldn't get user"})
 	}
